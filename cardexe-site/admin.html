@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAINEL ADMIN — CARD.EXE</title>
+<style>
+  :root{--bg:#070b12;--panel:#0e1622;--line:#1b2a3f;--txt:#d7e6ff;--dim:#5c7396;--acc:#00e5ff;--acc2:#00ffa3;--err:#ff4d6d}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Courier New',monospace}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;padding:16px}
+  .wrap{max-width:520px;margin:0 auto}
+  h1{font-size:1rem;letter-spacing:.15em;color:var(--acc);margin-bottom:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+  label{display:block;font-size:.62rem;color:var(--dim);letter-spacing:.1em;margin:10px 0 4px}
+  input,textarea,select{width:100%;background:#0a1019;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:10px;font-family:inherit;font-size:.8rem}
+  textarea{resize:vertical;min-height:60px}
+  input[type=color]{padding:2px;height:38px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{width:100%;margin-top:14px;border:none;border-radius:8px;padding:14px;font-weight:bold;letter-spacing:.1em;cursor:pointer;font-family:inherit;font-size:.85rem}
+  .btn.save{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#04121a}
+  .btn.danger{background:transparent;border:1px solid var(--err);color:var(--err);margin-top:8px}
+  .msg{font-size:.65rem;color:var(--acc2);margin-top:10px;min-height:14px}
+  .login{max-width:320px;margin:60px auto;text-align:center}
+  .login input{margin-top:14px}
+  .chk{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .chk input[type=text]{flex:1}
+  .del{background:var(--err);color:#fff;border:none;border-radius:5px;padding:6px 10px;cursor:pointer;font-size:.7rem}
+  .hint{font-size:.58rem;color:var(--dim);margin-top:6px;line-height:1.5}
+  #lockScreen{display:block}
+  #app{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TELA DE LOGIN -->
+  <div id="lockScreen" class="login">
+    <h1>PAINEL ADMIN</h1>
+    <div class="card">
+      <label>DIGITE A SENHA</label>
+      <input type="password" id="pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()">
+      <button class="btn save" onclick="tryLogin()">ENTRAR</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <h1>PAINEL ADMIN — CARD.EXE</h1>
+
+    <div class="card">
+      <label>IMAGEM / MASCARA (cole base64 ou URL)</label>
+      <textarea id="f_heroImg" placeholder="data:image/jpeg;base64,... ou https://..."></textarea>
+      <div class="hint">Cole aqui o base64 do mascara.jpg (ou uma URL). É o símbolo principal do site.</div>
+    </div>
+
+    <div class="card">
+      <label>TÍTULO DO SITE</label><input id="f_title">
+      <label>SUBTÍTULO</label><input id="f_sub">
+      <div class="row">
+        <div><label>STATUS</label><input id="f_status"></div>
+        <div><label>RODAPÉ</label><input id="f_foot"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>TEXTO — TÍTULO BANCO</label><input id="f_qBankTitle">
+      <label>TEXTO — DESC BANCO</label><textarea id="f_qBankDesc"></textarea>
+      <label>TEXTO — TÍTULO BANDEIRA</label><input id="f_qBrandTitle">
+      <label>TEXTO — DESC BANDEIRA</label><textarea id="f_qBrandDesc"></textarea>
+      <label>TEXTO — TÍTULO CARTÃO</label><input id="f_qCardTitle">
+      <label>TEXTO — NOTA PAGAMENTO</label><textarea id="f_payNote"></textarea>
+      <div class="row">
+        <div><label>BOTÃO CHECKOUT</label><input id="f_payBtn"></div>
+        <div><label>BOTÃO JÁ PAGO</label><input id="f_paidBtn"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>CORES DO TEMA</label>
+      <div class="row">
+        <div><label>ACENTO</label><input type="color" id="f_acc"></div>
+        <div><label>ACENTO 2</label><input type="color" id="f_acc2"></div>
+      </div>
+      <label>FUNDO</label><input type="color" id="f_bg">
+    </div>
+
+    <div class="card">
+      <label>BANCOS (nome | tag)</label>
+      <div id="banksList"></div>
+      <button class="btn save" style="width:auto;padding:8px 14px;margin-top:10px" onclick="addBank()">+ adicionar banco</button>
+    </div>
+
+    <div class="card">
+      <label>BANDEIRAS (nome | preço | label | classe)</label>
+      <div id="brandsList"></div>
+      <button class="btn save" style="width:auto;padding:8px 14px;margin-top:10px" onclick="addBrand()">+ adicionar bandeira</button>
+    </div>
+
+    <div class="card">
+      <label>LINKS DE CHECKOUT (banco + bandeira → URL)</label>
+      <div id="checkoutsList"></div>
+      <div class="hint">Defina a URL do gateway (Stripe, PagSeguro, etc.) para cada combinação.</div>
+    </div>
+
+    <button class="btn save" onclick="saveAll()">💾 SALVAR TUDO (tempo real)</button>
+    <button class="btn danger" onclick="resetAll()">RESTAURAR PADRÃO</button>
+    <div class="msg" id="saveMsg"></div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = "esau2323";
+const DEFAULT_CFG = {
+  title:"CARD.EXE", sub:"Cartões clonados • entrega imediata", status:"ONLINE",
+  foot:"CARD.EXE © 2026 — uso interno", heroImg:"",
+  qBankTitle:"Escolha o banco", qBankDesc:"Selecione o banco do cartão que deseja.",
+  qBrandTitle:"Escolha a bandeira", qBrandDesc:"Selecione a bandeira do cartão.",
+  qCardTitle:"Seu cartão", payNote:"Pague no checkout para liberar os dados completos.",
+  payBtn:"IR PARA CHECKOUT", paidBtn:"JÁ PAGO — MOSTRAR DADOS",
+  theme:{acc:"#00e5ff",acc2:"#00ffa3",bg:"#070b12"},
+  banks:[{id:"itau",name:"Itaú",tag:"clássico"},{id:"bradesco",name:"Bradesco",tag:"amplo"},
+    {id:"santander",name:"Santander",tag:"global"},{id:"caixa",name:"Caixa",tag:"estatal"},
+    {id:"bb",name:"Banco do Brasil",tag:"estatal"},{id:"nubank",name:"Nubank",tag:"digital"},
+    {id:"inter",name:"Inter",tag:"digital"},{id:"sicredi",name:"Sicredi",tag:"cooperativo"}],
+  brands:[{id:"mc",name:"Mastercard",price:49.9,cls:"mc",label:"MC"},
+    {id:"visa",name:"Visa",price:54.9,cls:"visa",label:"VISA"},
+    {id:"elo",name:"Elo",price:44.9,cls:"elo",label:"ELO"},
+    {id:"amex",name:"Amex",price:69.9,cls:"amex",label:"AMEX"}],
+  checkouts:{}
+};
+let CFG = load();
+function load(){try{const r=localStorage.getItem('cardexe_cfg');return r?Object.assign({},DEFAULT_CFG,JSON.parse(r)):JSON.parse(JSON.stringify(DEFAULT_CFG));}catch(e){return JSON.parse(JSON.stringify(DEFAULT_CFG));}}
+function save(){localStorage.setItem('cardexe_cfg',JSON.stringify(CFG));}
+
+function tryLogin(){
+  if(document.getElementById('pwd').value===PASSWORD){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    fill();
+  }else{ document.getElementById('loginMsg').textContent='Senha incorreta.'; }
+}
+function fill(){
+  f_heroImg.value=CFG.heroImg||'';
+  f_title.value=CFG.title; f_sub.value=CFG.sub; f_status.value=CFG.status; f_foot.value=CFG.foot;
+  f_qBankTitle.value=CFG.qBankTitle; f_qBankDesc.value=CFG.qBankDesc;
+  f_qBrandTitle.value=CFG.qBrandTitle; f_qBrandDesc.value=CFG.qBrandDesc;
+  f_qCardTitle.value=CFG.qCardTitle; f_payNote.value=CFG.payNote;
+  f_payBtn.value=CFG.payBtn; f_paidBtn.value=CFG.paidBtn;
+  f_acc.value=CFG.theme.acc; f_acc2.value=CFG.theme.acc2; f_bg.value=CFG.theme.bg;
+  renderBanksAdmin(); renderBrandsAdmin(); renderCheckouts();
+}
+function renderBanksAdmin(){
+  const el=document.getElementById('banksList'); el.innerHTML='';
+  CFG.banks.forEach((b,i)=>{
+    const d=document.createElement('div'); d.className='chk';
+    d.innerHTML=`<input type="text" value="${b.name}" data-i="${i}" data-k="name">
+      <input type="text" value="${b.tag||''}" style="max-width:90px" data-i="${i}" data-k="tag">
+      <button class="del" onclick="delBank(${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+function renderBrandsAdmin(){
+  const el=document.getElementById('brandsList'); el.innerHTML='';
+  CFG.brands.forEach((b,i)=>{
+    const d=document.createElement('div'); d.className='chk';
+    d.innerHTML=`<input type="text" value="${b.name}" data-i="${i}" data-k="name">
+      <input type="number" step="0.1" value="${b.price}" style="max-width:70px" data-i="${i}" data-k="price">
+      <input type="text" value="${b.label}" style="max-width:60px" data-i="${i}" data-k="label">
+      <button class="del" onclick="delBrand(${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+function renderCheckouts(){
+  const el=document.getElementById('checkoutsList'); el.innerHTML='';
+  const combos=[];
+  CFG.banks.forEach(b=>CFG.brands.forEach(br=>combos.push({key:b.id+'|'+br.id,label:b.name+' + '+br.name})));
+  combos.forEach(c=>{
+    const d=document.createElement('div'); d.className='chk';
+    d.innerHTML=`<span style="font-size:.6rem;color:var(--dim);white-space:nowrap">${c.label}</span>
+      <input type="text" value="${CFG.checkouts[c.key]||''}" placeholder="https://..." data-key="${c.key}">`;
+    el.appendChild(d);
+  });
+}
+function addBank(){CFG.banks.push({id:'b'+Date.now(),name:'Novo Banco',tag:''});renderBanksAdmin();renderCheckouts();}
+function delBank(i){CFG.banks.splice(i,1);renderBanksAdmin();renderCheckouts();}
+function addBrand(){CFG.brands.push({id:'br'+Date.now(),name:'Nova',price:49.9,cls:'mc',label:'NOVA'});renderBrandsAdmin();renderCheckouts();}
+function delBrand(i){CFG.brands.splice(i,1);renderBrandsAdmin();renderCheckouts();}
+
+function collect(){
+  CFG.heroImg=f_heroImg.value.trim();
+  CFG.title=f_title.value; CFG.sub=f_sub.value; CFG.status=f_status.value; CFG.foot=f_foot.value;
+  CFG.qBankTitle=f_qBankTitle.value; CFG.qBankDesc=f_qBankDesc.value;
+  CFG.qBrandTitle=f_qBrandTitle.value; CFG.qBrandDesc=f_qBrandDesc.value;
+  CFG.qCardTitle=f_qCardTitle.value; CFG.payNote=f_payNote.value;
+  CFG.payBtn=f_payBtn.value; CFG.paidBtn=f_paidBtn.value;
+  CFG.theme.acc=f_acc.value; CFG.theme.acc2=f_acc2.value; CFG.theme.bg=f_bg.value;
+  document.querySelectorAll('#banksList input').forEach(inp=>{
+    const i=+inp.dataset.i,k=inp.dataset.k;
+    if(CFG.banks[i]) CFG.banks[i][k]=k==='tag'?inp.value:inp.value;
+  });
+  document.querySelectorAll('#brandsList input').forEach(inp=>{
+    const i=+inp.dataset.i,k=inp.dataset.k;
+    if(CFG.brands[i]) CFG.brands[i][k]=k==='price'?parseFloat(inp.value)||0:inp.value;
+  });
+  CFG.checkouts={};
+  document.querySelectorAll('#checkoutsList input').forEach(inp=>{
+    const v=inp.value.trim(); if(v) CFG.checkouts[inp.dataset.key]=v;
+  });
+}
+function saveAll(){collect();save();document.getElementById('saveMsg').textContent='✔ Salvo! Atualize index.html para ver.';}
+function resetAll(){if(confirm('Restaurar tudo para o padrão?')){CFG=JSON.parse(JSON.stringify(DEFAULT_CFG));save();fill();}}
+</script>
+</body>
+</html>

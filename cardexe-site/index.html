@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>CardExe — Cartões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --radius:14px;
+  --bg:oklch(0.16 0.01 290);
+  --fg:oklch(0.97 0.005 300);
+  --card:oklch(0.21 0.012 290);
+  --card2:oklch(0.26 0.012 290);
+  --primary:oklch(0.74 0.15 300);
+  --primary-fg:oklch(0.16 0.02 290);
+  --muted:oklch(0.76 0.02 300);
+  --border:oklch(1 0 0 / 11%);
+  --input:oklch(1 0 0 / 16%);
+  --ring:oklch(0.8 0.14 300);
+  --aurora1:oklch(0.72 0.17 300);
+  --aurora2:oklch(0.82 0.11 330);
+}
+*{box-sizing:border-box;border-color:var(--border)}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--fg);font-family:"Manrope",system-ui,sans-serif;
+  background:
+    radial-gradient(70% 40% at 50% 0%, oklch(0.45 0.22 315/.55), transparent 70%),
+    repeating-linear-gradient(0deg, oklch(1 0 0/.025) 0 1px, transparent 1px 3px),
+    var(--bg);
+  min-height:100dvh;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Sora",system-ui,sans-serif;margin:0}
+.text-gradient{background:linear-gradient(90deg,var(--aurora1),var(--aurora2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+
+/* header */
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:color-mix(in oklab,var(--bg) 70%,transparent);border-bottom:1px solid var(--border)}
+.header-inner{max-width:520px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;overflow:hidden;flex:none;box-shadow:0 0 18px oklch(0.6 0.2 310/.6);border:1px solid var(--border)}
+.logo img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:linear-gradient(90deg,var(--aurora1),var(--aurora2));color:var(--primary-fg);box-shadow:0 6px 20px oklch(0.6 0.2 310/.35)}
+
+/* hero */
+.hero{padding:22px 0 8px;text-align:center}
+.hero .mask{width:min(70vw,220px);aspect-ratio:1;height:auto;margin:0 auto 14px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;animation:float 5s ease-in-out infinite}
+.hero .mask img{display:block;width:100%;height:100%;object-fit:contain;border:0;border-radius:0;box-shadow:none;mix-blend-mode:screen}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.hero h1{font-size:30px;font-weight:800;line-height:1.1}
+.hero p{color:var(--muted);margin:10px auto 0;max-width:34ch;font-size:14px}
+.features{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.feature{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--border)}
+.feature svg{width:14px;height:14px;color:var(--aurora1)}
+
+/* steps */
+.steps{margin-top:22px;display:flex;flex-direction:column;gap:14px}
+.step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.step h2{font-size:14px;font-weight:700;letter-spacing:.02em;margin-bottom:4px}
+.step h2 .num{color:var(--aurora1);margin-right:6px}
+.step .desc{color:var(--muted);font-size:12px;margin-bottom:12px}
+
+/* bank grid */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.opt{position:relative;display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:.15s;text-align:left}
+.opt:hover{border-color:color-mix(in oklab,var(--primary) 40%,var(--border))}
+.opt.sel{border-color:var(--primary);background:color-mix(in oklab,var(--primary) 14%,var(--card2));box-shadow:0 0 0 1px var(--primary),0 8px 24px oklch(0.6 0.2 310/.25)}
+.opt .name{font-weight:700;font-size:14px}
+.opt .tag{font-size:11px;color:var(--muted)}
+.opt .check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--primary);color:var(--primary-fg);display:none;align-items:center;justify-content:center}
+.opt.sel .check{display:flex}
+.opt .check svg{width:12px;height:12px}
+
+/* brand grid */
+.brands{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.brand-card{position:relative;display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:.15s;text-align:left}
+.brand-card:hover{border-color:color-mix(in oklab,var(--primary) 40%,var(--border))}
+.brand-card.sel{border-color:var(--primary);background:color-mix(in oklab,var(--primary) 14%,var(--card2));box-shadow:0 0 0 1px var(--primary),0 8px 24px oklch(0.6 0.2 310/.25)}
+.brand-card .bname{font-weight:800;font-size:15px;letter-spacing:.02em}
+.brand-card .price{font-size:13px;color:var(--muted);font-weight:700}
+.brand-card .check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--primary);color:var(--primary-fg);display:none;align-items:center;justify-content:center}
+.brand-card.sel .check{display:flex}
+.brand-card .check svg{width:12px;height:12px}
+.b-visa{color:#1a1f71}.b-master{color:#eb001b}.b-elo{color:#ff8000}.b-amex{color:#2e77bc}
+
+/* virtual card */
+.vcard-wrap{perspective:1000px}
+.vcard{position:relative;width:100%;aspect-ratio:1.586;border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;color:#fff;
+  background:linear-gradient(135deg,#1a1030 0%,#2a1a4a 40%,#3a2a5a 100%);
+  border:1px solid color-mix(in oklab,var(--primary) 40%,transparent);
+  box-shadow:0 20px 50px oklch(0.4 0.2 300/.4),inset 0 1px 0 rgba(255,255,255,.08)}
+.vcard::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 80% -10%,rgba(255,255,255,.18),transparent 50%);pointer-events:none}
+.vcard .top{display:flex;justify-content:space-between;align-items:flex-start}
+.vcard .bank-label{font-family:"Sora";font-weight:800;font-size:15px;letter-spacing:.04em}
+.vcard .chip{width:44px;height:32px;border-radius:6px;background:linear-gradient(135deg,#f5d76e,#c9a227);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.vcard .num{font-family:"Sora";font-size:clamp(18px,5.4vw,22px);letter-spacing:.12em;font-weight:700;display:flex;flex-wrap:wrap;gap:0 12px}
+.vcard .row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.vcard .field{min-width:0}
+.vcard .lbl{font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-bottom:2px}
+.vcard .val{font-size:14px;font-weight:700;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vcard .brand-mark{font-family:"Sora";font-weight:800;font-size:18px;letter-spacing:.02em}
+.blurred{filter:blur(7px);user-select:none;cursor:pointer;transition:filter .3s}
+.blurred.revealed{filter:none}
+.vcard .hint{font-size:11px;color:rgba(255,255,255,.55);margin-top:10px;display:flex;align-items:center;gap:6px}
+.vcard .hint svg{width:13px;height:13px;flex:none}
+
+/* buttons */
+.btn{appearance:none;border:0;cursor:pointer;font-family:"Sora",system-ui,sans-serif;font-weight:700;border-radius:12px;padding:14px 18px;font-size:15px;transition:.15s;width:100%}
+.btn-primary{background:linear-gradient(90deg,var(--aurora1),var(--aurora2));color:var(--primary-fg);box-shadow:0 8px 24px oklch(0.6 0.2 310/.35)}
+.btn-primary:active{transform:translateY(1px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:var(--card2);color:var(--fg);border:1px solid var(--border)}
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+
+/* footer */
+footer{margin-top:28px;text-align:center;color:var(--muted);font-size:12px}
+footer a{color:var(--muted);text-decoration:none}
+.admin-link{display:inline-block;margin-top:8px;font-size:10px;letter-spacing:.1em;color:color-mix(in oklab,var(--muted) 60%,transparent);text-decoration:none}
+
+/* modal */
+.modal-backdrop{position:fixed;inset:0;z-index:50;background:rgba(5,3,15,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop.open{display:flex}
+.modal{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;position:relative;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:4px}
+.modal .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.modal .close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal .close svg{width:16px;height:16px}
+.spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.code-line{font-family:"Sora";font-size:20px;letter-spacing:.14em;font-weight:700;background:var(--card2);border:1px dashed var(--input);border-radius:10px;padding:14px;text-align:center;margin:12px 0}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:700}
+.pay-note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="logo"><img id="logoImg" src="mascara.png" alt="CardExe"></div>
+      <span class="badge" id="tBadge">ANONIMATO</span>
+    </div>
+    <span class="pill" id="tStatus">Disponível</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <img class="mask" id="heroImg" src="mascara.png" alt="CardExe">
+    <h1 id="tTitle">Cartões <span class="text-gradient">prontos</span></h1>
+    <p id="tSub">Escolha banco e bandeira. Cartão gerado na hora.</p>
+    <div class="features">
+      <span class="feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span id="f1">Acesso rápido</span></span>
+      <span class="feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span id="f2">100% seguro</span></span>
+      <span class="feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/></svg><span id="f3">Alta qualidade</span></span>
+    </div>
+  </section>
+
+  <section class="steps">
+    <div class="step">
+      <h2><span class="num">1</span><span id="qBankTitle">Escolha o banco</span></h2>
+      <p class="desc" id="qBankDesc">Selecione o banco do cartão.</p>
+      <div class="grid" id="bankGrid"></div>
+    </div>
+
+    <div class="step">
+      <h2><span class="num">2</span><span id="qBrandTitle">Escolha a bandeira</span></h2>
+      <p class="desc" id="qBrandDesc">Selecione a bandeira e veja o preço.</p>
+      <div class="brands" id="brandGrid"></div>
+    </div>
+
+    <div class="step">
+      <h2><span class="num">3</span><span id="qCardTitle">Seu cartão</span></h2>
+      <div class="vcard-wrap">
+        <div class="vcard" id="vcard">
+          <div class="top">
+            <span class="bank-label" id="vcBank">—</span>
+            <div class="chip"></div>
+          </div>
+          <div class="num" id="vcNum">••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;••••</div>
+          <div class="row">
+            <div class="field"><div class="lbl">Titular</div><div class="val blurred" id="vcName" onclick="reveal(this)">—</div></div>
+            <div class="field"><div class="lbl">Validade</div><div class="val blurred" id="vcExp" onclick="reveal(this)">—</div></div>
+            <div class="field"><div class="lbl">CVV</div><div class="val blurred" id="vcCvv" onclick="reveal(this)">—</div></div>
+            <div class="brand-mark" id="vcBrand"></div>
+          </div>
+          <div class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span id="tRevealHint">Toque nos números para revelar.</span></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnGenerate" onclick="generate()">Gerar cartão</button>
+        <button class="btn btn-primary" id="btnPay" onclick="pay()" disabled>Pagar</button>
+        <button class="btn btn-ghost" id="btnPaid" onclick="paid()" style="display:none">Já paguei — mostrar dados</button>
+      </div>
+      <p class="pay-note" id="payNote">Após pagar no checkout, toque em "Já paguei" para desbloquear todos os dados.</p>
+    </div>
+  </section>
+
+  <footer>
+    <a href="#" id="tFoot">contato@cardexe.exemplo</a>
+    <br><span id="tCopyright">© 2026 CardExe · Todos os direitos reservados</span>
+    <a class="admin-link" href="admin.html">admin</a>
+  </footer>
+</div>
+
+<!-- modal -->
+<div class="modal-backdrop" id="modalBack" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const BANKS=[
+  {id:"itau",name:"Itaú",tag:"Banco"},
+  {id:"bradesco",name:"Bradesco",tag:"Banco"},
+  {id:"santander",name:"Santander",tag:"Banco"},
+  {id:"caixa",name:"Caixa",tag:"Banco"},
+  {id:"bb",name:"BB",tag:"Banco"},
+  {id:"nubank",name:"Nubank",tag:"Fintech"},
+  {id:"inter",name:"Inter",tag:"Fintech"},
+  {id:"sicredi",name:"Sicredi",tag:"Coop."}
+];
+const CARDS=[
+  {id:"master",name:"Mastercard",price:25,label:"MC",cls:"b-master"},
+  {id:"visa",name:"Visa",price:20,label:"VISA",cls:"b-visa"},
+  {id:"elo",name:"Elo",price:18,label:"ELO",cls:"b-elo"},
+  {id:"amex",name:"Amex",price:30,label:"AMEX",cls:"b-amex"}
+];
+let cfg={};
+try{cfg=JSON.parse(localStorage.getItem("cardexe_cfg")||"{}")}catch(e){cfg={}}
+function C(k,d){return (cfg[k]!==undefined&&cfg[k]!=="")?cfg[k]:d}
+function applyCfg(){
+  document.title=C("title","CardExe — Cartões");
+  const hero=C("heroImg","mascara.png");
+  document.getElementById("heroImg").src=hero;
+  document.getElementById("logoImg").src=hero;
+  document.getElementById("tTitle").innerHTML=C("title","CardExe — Cartões").replace(/(prontos)/,"<span class='text-gradient'>$1</span>");
+  document.getElementById("tSub").textContent=C("sub","Escolha banco e bandeira. Cartão gerado na hora.");
+  document.getElementById("tStatus").textContent=C("status","Disponível");
+  document.getElementById("tBadge").textContent=C("badge","ANONIMATO");
+  document.getElementById("tFoot").textContent=C("foot","contato@cardexe.exemplo");
+  document.getElementById("tFoot").href="mailto:"+C("foot","contato@cardexe.exemplo");
+  document.getElementById("tCopyright").textContent=C("copyright","© 2026 CardExe · Todos os direitos reservados");
+  document.getElementById("qBankTitle").textContent=C("qBankTitle","Escolha o banco");
+  document.getElementById("qBankDesc").textContent=C("qBankDesc","Selecione o banco do cartão.");
+  document.getElementById("qBrandTitle").textContent=C("qBrandTitle","Escolha a bandeira");
+  document.getElementById("qBrandDesc").textContent=C("qBrandDesc","Selecione a bandeira e veja o preço.");
+  document.getElementById("qCardTitle").textContent=C("qCardTitle","Seu cartão");
+  document.getElementById("payNote").textContent=C("payNote","Após pagar no checkout, toque em \"Já paguei\" para desbloquear todos os dados.");
+  document.getElementById("btnPay").textContent=C("payBtn","Pagar");
+  document.getElementById("btnPaid").textContent=C("paidBtn","Já paguei — mostrar dados");
+  document.getElementById("tRevealHint").textContent=C("revealHint","Toque nos números para revelar.");
+  if(cfg.acc){document.documentElement.style.setProperty("--aurora1",cfg.acc)}
+  if(cfg.acc2){document.documentElement.style.setProperty("--aurora2",cfg.acc2)}
+  if(cfg.bg){document.documentElement.style.setProperty("--bg",cfg.bg)}
+  renderBanks();renderBrands();
+}
+function renderBanks(){
+  const list=cfg.banks&&cfg.banks.length?cfg.banks:BANKS;
+  const g=document.getElementById("bankGrid");g.innerHTML="";
+  list.forEach(b=>{
+    const d=document.createElement("button");d.className="opt";d.dataset.id=b.id;
+    d.innerHTML=`<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="name">${b.name}</span><span class="tag">${b.tag||""}</span>`;
+    d.onclick=()=>selectBank(b.id);g.appendChild(d);
+  });
+}
+function renderBrands(){
+  const list=cfg.brands&&cfg.brands.length?cfg.brands:CARDS;
+  const g=document.getElementById("brandGrid");g.innerHTML="";
+  list.forEach(b=>{
+    const d=document.createElement("button");d.className="brand-card";d.dataset.id=b.id;
+    d.innerHTML=`<span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="bname ${b.cls||""}">${b.name}</span><span class="price">R$ ${b.price}</span>`;
+    d.onclick=()=>selectBrand(b.id);g.appendChild(d);
+  });
+}
+let selBank=null,selBrand=null,current=null;
+function selectBank(id){selBank=id;[...document.querySelectorAll("#bankGrid .opt")].forEach(o=>o.classList.toggle("sel",o.dataset.id===id));current=null;updatePay();}
+function selectBrand(id){selBrand=id;[...document.querySelectorAll("#brandGrid .brand-card")].forEach(o=>o.classList.toggle("sel",o.dataset.id===id));current=null;updatePay();}
+function updatePay(){
+  const ready=selBank&&selBrand;
+  document.getElementById("btnPay").disabled=!ready;
+}
+function luhn(num){let s=0,alt=false;for(let i=num.length-1;i>=0;i--){let n=+num[i];if(alt){n*=2;if(n>9)n-=9}s+=n;alt=!alt}return s%10===0}
+function genNumber(prefix){
+  let base=prefix;while(base.length<15)base+=Math.floor(Math.random()*10);
+  let sum=0,alt=false;for(let i=base.length-1;i>=0;i--){let n=+base[i];if(alt){n*=2;if(n>9)n-=9}sum+=n;alt=!alt}
+  const check=(10-(sum%10))%10;return base+check;
+}
+const PREFIX={master:"5",visa:"4",elo:"636",amex:"37"};
+function genCard(){
+  const b=(cfg.banks||BANKS).find(x=>x.id===selBank)||BANKS.find(x=>x.id===selBank);
+  const c=(cfg.brands||CARDS).find(x=>x.id===selBrand)||CARDS.find(x=>x.id===selBrand);
+  const num=genNumber(PREFIX[c.id]||"4");
+  const first=["JOAO","MARIA","PEDRO","ANA","LUCAS","CARLA","RAFAEL","BEATRIZ"];
+  const last=["SILVA","SOUZA","OLIVEIRA","COSTA","PEREIRA","ALMEIDA","FERNANDES","ROCHA"];
+  const name=first[Math.floor(Math.random()*first.length)]+" "+last[Math.floor(Math.random()*last.length)];
+  const m=String(Math.floor(Math.random()*12)+1).padStart(2,"0");
+  const y=String(Math.floor(Math.random()*5)+26);
+  const cvv=String(Math.floor(Math.random()*900)+100);
+  return {num,name,exp:m+"/"+y,cvv,bank:b.name,brand:c.name,price:c.price};
+}
+function fmtNum(n){return n.replace(/(\d{4})(?=\d)/g,"$1 ")}
+function generate(){
+  if(!selBank||!selBrand)return;
+  current=genCard();
+  document.getElementById("vcBank").textContent=current.bank;
+  document.getElementById("vcBrand").textContent=current.brand;
+  document.getElementById("vcNum").innerHTML=fmtNum(current.num).split(" ").map(s=>`<span class="blurred" onclick="reveal(this)">${s}</span>`).join("&nbsp;");
+  setField("vcName",current.name);setField("vcExp",current.exp);setField("vcCvv",current.cvv);
+  document.getElementById("btnPay").disabled=false;
+  document.getElementById("btnPaid").style.display="none";
+  document.getElementById("vcard").style.background="linear-gradient(135deg,#1a1030 0%,#2a1a4a 40%,#3a2a5a 100%)";
+}
+function setField(id,val){const el=document.getElementById(id);el.textContent=val;el.classList.remove("revealed")}
+function reveal(el){el.classList.add("revealed")}
+function pay(){
+  if(!current)return;
+  const key=selBank+"_"+selBrand;
+  const url=(cfg.checkout&&cfg.checkout[key])||C("checkoutDefault","https://checkout.exemplo.com/"+key);
+  window.open(url,"_blank");
+  document.getElementById("btnPaid").style.display="block";
+  showModal(`
+    <h3>Pagamento</h3>
+    <p class="sub">${current.bank} · ${current.brand} · R$ ${current.price}</p>
+    <div class="code-line">${fmtNum(current.num)}</div>
+    <div class="kv"><span class="k">Checkout</span><span class="v">aberto em nova aba</span></div>
+    <div class="kv"><span class="k">Valor</span><span class="v">R$ ${current.price}</span></div>
+    <p class="pay-note">${C("payNote","Após pagar no checkout, volte aqui e toque em \"Já paguei\".")}</p>
+    <div class="actions"><button class="btn btn-primary" onclick="closeModal()">Entendi</button></div>
+  `);
+}
+function paid(){
+  if(!current)return;
+  document.querySelectorAll(".blurred").forEach(e=>e.classList.add("revealed"));
+  document.getElementById("btnPaid").style.display="none";
+  document.getElementById("btnPay").disabled=true;
+  document.getElementById("vcard").style.background="linear-gradient(135deg,#0f2a1a 0%,#1a4a2a 40%,#2a5a3a 100%)";
+  showModal(`
+    <h3>Cartão liberado</h3>
+    <p class="sub">${current.bank} · ${current.brand}</p>
+    <div class="code-line">${fmtNum(current.num)}</div>
+    <div class="kv"><span class="k">Titular</span><span class="v">${current.name}</span></div>
+    <div class="kv"><span class="k">Validade</span><span class="v">${current.exp}</span></div>
+    <div class="kv"><span class="k">CVV</span><span class="v">${current.cvv}</span></div>
+    <div class="actions"><button class="btn btn-primary" onclick="closeModal()">Fechar</button></div>
+  `);
+}
+function showModal(html){document.getElementById("modalBody").innerHTML=html;document.getElementById("modalBack").classList.add("open")}
+function closeModal(){document.getElementById("modalBack").classList.remove("open")}
+applyCfg();
+</script>
+</body>
+</html>
